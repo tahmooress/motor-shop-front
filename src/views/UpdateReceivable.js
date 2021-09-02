@@ -46,7 +46,18 @@ class UpdateReceivable extends React.Component{
             .then(response => {
                 this.props.onAlert(true,false,"با موفقیت ثبت شد")
             }).catch(err =>{
-                this.props.onAlert(true,true,err.message)
+                if (err.response.data.errors !== null) {
+                    if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
+                        this.props.onExit()
+                        return
+                        }
+                    
+                    this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
+    
+                    return
+                    }
+    
+                    this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
             })
     }
 
@@ -60,7 +71,13 @@ class UpdateReceivable extends React.Component{
             },
         };    
 
-            let next_due_date = util.gDate(util.jalaliDate(this.state.year,this.state.month,this.state.day), true);
+        let next_due_date = ""
+
+        try {
+            next_due_date = util.gDate(util.jalaliDate(this.state.year,this.state.month,this.state.day), true);
+        } catch (error) {
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+        }
 
             const body = {
                 id : this.props.match.params.id,
@@ -73,7 +90,18 @@ class UpdateReceivable extends React.Component{
             .then(response => {
                 this.props.onAlert(true,false,"با موفقیت ثبت شد")
             }).catch(err =>{
-                this.props.onAlert(true,true,err.message)
+                if (err.response.data.errors !== null) {
+                    if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
+                        this.props.onExit()
+                        return
+                        }
+                    
+                    this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
+    
+                    return
+                    }
+    
+                    this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
             })
     }
 
@@ -196,16 +224,18 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({ type :userLogout, user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ type : showAlert, alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(UpdateReceivable)

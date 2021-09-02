@@ -17,7 +17,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import axios from 'axios';
 import {showAlert, userLogin} from "../../../store";
-
+import Alert from 'src/reusable/Alert';
 import { connect } from 'react-redux';
 
 
@@ -39,7 +39,6 @@ class Login extends React.Component {
 
   handleSubmit = (e)=>{
     const URL = "http://127.0.0.1:8000/login";
-    console.log(this.state)
     let data = {
       user_name : this.state.user_name,
       password : this.state.password
@@ -59,14 +58,29 @@ class Login extends React.Component {
       this.props.history.push("/")
     })
     .catch(err=>{
-        console.log(err)
+      if (err.response.data.errors !== null) {
+        this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
+        this.setState({
+          toke : "",
+          user_name : "",
+          password : ""
+        })
+
+        return
+          }
+          this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+          this.setState({
+            toke : "",
+            user_name : "",
+            password : ""
+          })
     })
 }
 
   render(){
-    console.log(this.props)
     return (
       <React.Fragment>
+        <Alert show={this.props.alert.show} message={this.props.alert.message} error={this.props.alert.error}/>
         <div className="c-app c-default-layout flex-row align-items-center">
           <CContainer>
             <CRow className="justify-content-center">
@@ -83,7 +97,7 @@ class Login extends React.Component {
                               <CIcon name="cil-user" />
                             </CInputGroupText>
                           </CInputGroupPrepend>
-                          <CInput onChange={this.handleChange} type="text" placeholder="Username" autoComplete="username" name="user_name"/>
+                          <CInput onChange={this.handleChange} type="text" value={this.state.user_name} placeholder="Username" autoComplete="username" name="user_name"/>
                         </CInputGroup>
                         <CInputGroup className="mb-4">
                           <CInputGroupPrepend>
@@ -91,7 +105,7 @@ class Login extends React.Component {
                               <CIcon name="cil-lock-locked" />
                             </CInputGroupText>
                           </CInputGroupPrepend>
-                          <CInput   onChange={this.handleChange} type="password" placeholder="Password" autoComplete="current-password" name="password" />
+                          <CInput   onChange={this.handleChange} value={this.state.password} type="password" placeholder="Password" autoComplete="current-password" name="password" />
                         </CInputGroup>
                         <CRow>
                           <CCol xs="6">
@@ -132,12 +146,21 @@ const mapDispatchToProps = (dispatch)=>{
         userName :userName,
         token : token,
         accessibility :accessibilt
-      }})
+      }}),
+      onAlert : (show,error,message) => dispatch({
+        type : showAlert, payload : {
+            show : show,
+            error : error,
+            message : message
+        }
+    })
   }
 }
 const mapStateToProps = (state) =>{
   return {
-      token : state.user.token
+    token : state.user.token,
+    accessibility : state.user.accessibility,
+    alert : state.alert,
   }
 }
 

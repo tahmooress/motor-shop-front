@@ -29,7 +29,6 @@ class App extends Component {
     }
   }
   static getDerivedStateFromProps(props, current_state) {
-    console.log("new goh khoria from outside")
     if (!props.token) {
       return {
         redirect : "/login"
@@ -74,7 +73,6 @@ class App extends Component {
   // }
   
   render() {
-    console.log(this.state)
     return (
       <>
         <HashRouter>

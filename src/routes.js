@@ -42,7 +42,7 @@ const routes = [
   { path: '/transactions', name: 'Carousel', component: Transactions },
   { path: '/create-shop', name: 'Carousel', component: CreateShop },
   { path: '/update-payable/:id',exact: true, name: 'Carousel', component: UpdatePayable },
-  { path: '/update-receivable/:id',exact: true, name: 'Carousel', component: UpdatePayable },
+  { path: '/update-receivable/:id',exact: true, name: 'Carousel', component: UpdateReceivable },
 ];
 
 export default routes;

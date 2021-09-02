@@ -16,7 +16,6 @@ import {
 
   class InventoryTable extends React.Component{
       render(){
-          console.log(this.props.stocks)
         let stocks = this.props.stocks ? this.props.stocks.map((stock, index) => {
             return  {
                 id : index,

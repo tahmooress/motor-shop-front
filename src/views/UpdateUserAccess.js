@@ -14,7 +14,7 @@ import {
 } from '@coreui/react'
 import * as models from "../models/models"
 import axios from 'axios';
-import {userLogin, userLogout, showAlert} from "../store";
+import { userLogout, showAlert} from "../store";
 import { connect } from 'react-redux';
 import * as util from '../utilities/utilites';
 import Alert from 'src/reusable/Alert';
@@ -39,11 +39,50 @@ componentDidMount(){
         },
     };      
 
-    axios.get(`${models.URL}/shops`,config)
+    axios.get(`${models.URL}/admin`,config)
     .then(response => response.data)
-    .then(response => this.setState({
-        shops : response.data
-    }))
+    .then(response => {
+        if (response.meta.total === 0 ){
+            return
+        }
+        
+        let accesses = []
+
+        try {
+            accesses = util.getUserShops(response.data, this.props.userName)
+        } catch (error) {
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+        }
+
+        this.setState({
+            shops : accesses
+        })
+    }).catch(err => {
+        if (err.response.data.errors !== null) {
+            if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN || err.response.data.errors[0].detail === "Token is expired") {
+                this.props.onExit()
+
+                return
+                } 
+                this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
+                this.setState({
+                    user_name : "",
+                    password : "",
+                    accessibility : [],
+                    shops : []
+                })
+
+                return
+            }
+
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+            this.setState({
+                user_name : "",
+                password : "",
+                accessibility : [],
+                shops : []
+            })
+    })
 }
 
     handleSelect = (e) =>{
@@ -81,20 +120,40 @@ componentDidMount(){
             })
         }
 
-        console.log(body)
          axios.post(`${models.URL}/admin`,JSON.stringify(body),config)
         .then(response =>{
-            this.props.onAlert(true,false,"با موفقیت ثبت شد")
+            this.setState({
+                user_name : "",
+                password : "",
+                accessibility : [],
+            })   
+            this.props.onAlert(true,false,"با موفقیت ثبت شد")      
+  
         })
         .catch(err => {
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
-                    
-            }
+                
+                this.setState({
+                        user_name : "",
+                        password : "",
+                        accessibility : [],
+                })
+                this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
 
-            this.props.onAlert(true,true,err.message)
+                return
+                }
+                
+                this.setState({
+                    user_name : "",
+                    password : "",
+                    accessibility : [],
+                })
+                this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+             
         })
 
         
@@ -107,7 +166,6 @@ componentDidMount(){
     }
 
   render(){
-      console.log(this.state)
       const shops = this.state.shops ? this.state.shops.map((shop, index)=> {
             return(
                 <div className="col-sm-6 col-md-4 form-check" key={index} >
@@ -124,17 +182,17 @@ componentDidMount(){
             <Alert show={this.props.alert.show} message={this.props.alert.message} error={this.props.alert.error}/>
                 <CCard>
                     <CCardHeader>
-                        <CButton className="mx-2"><CIcon className="mx-2" name="cil-people"/>ایجاد دسترسی جدید</CButton>
+                        <CButton className="mx-2"><CIcon className="mx-2" name="cil-people"/>ایجاد کاربر جدید</CButton>
                     </CCardHeader>
                     <CCardBody>
                         <CRow className="mb-3">
                             <CCol xs="12" md="6" className="mb-2">
                                 <CLabel>نام کاربری</CLabel>
-                                <CInput name="user_name" type="text" onChange={(e) => this.handleChange(e)}/>
+                                <CInput name="user_name" type="text" value={this.state.user_name} onChange={(e) => this.handleChange(e)}/>
                             </CCol>
                             <CCol xs="12" md="6">
                                 <CLabel>رمز عبور</CLabel>
-                                <CInput name="password" type="text" onChange={(e) => this.handleChange(e)}/>
+                                <CInput name="password" type="text" value={this.state.password} onChange={(e) => this.handleChange(e)}/>
                             </CCol>
                         </CRow>
                         <CRow className="justify-content-center">
@@ -151,7 +209,7 @@ componentDidMount(){
                       </CRow>
                     </CCardFooter>
                 </CCard>
-            </CContainer>    
+            </CContainer> 
             </>
       )
   }  
@@ -166,23 +224,25 @@ const mapStateToProps = (state) => {
     return {
         token : state.user.token,
         accessibility : state.user.accessibility,
+        userName : state.user.userName,
         alert : state.alert,
     }
 }
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({ 
-            type : userLogout, user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ type : showAlert, alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(UpdateUserAccess)

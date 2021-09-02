@@ -160,3 +160,16 @@ export const txStatusStyle = (status) => {
         return 'warning'
     }
 }
+
+
+export const getUserShops = (users, userName) => {
+    const usersIterator = users.keys()
+
+    for (const key of usersIterator) {
+               if (users[key].user_name === userName) {
+                   return users[key].shops
+               }
+    }
+
+    return []
+}

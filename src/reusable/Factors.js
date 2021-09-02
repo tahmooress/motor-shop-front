@@ -2,7 +2,6 @@ import React from 'react'
 import {
     CDataTable,
     CCollapse,
-    CBadge,
     CButton,
     CCardBody,
     CContainer,

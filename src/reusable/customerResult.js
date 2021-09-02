@@ -39,11 +39,9 @@ class CustomerResult extends React.Component{
         let customer = new models.Customer(this.props.customer.id,this.props.customer.name, this.props.customer.last_name, this.props.customer.mobile, this.props.customer.national_code, this.props.customer.company)
         this.props.handleAddCustomer(customer)
         this.props.handleClose()
-        console.log(customer)
     }
 
     render(){
-        console.log(this.props, "customer result")
         return(
             <React.Fragment>
                 <CCard>

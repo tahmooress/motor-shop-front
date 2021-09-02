@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import axios from "axios";
 import Factor from "src/reusable/Factor";
 import Alert from "src/reusable/Alert";
-import store from "src/store";
+import { userLogout, showAlert}  from "../store";
 import * as models  from "../models/models"
 
 class FactorDetails extends React.Component {
@@ -34,13 +34,14 @@ class FactorDetails extends React.Component {
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
 
                 this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
                
                 return
               }
-              this.props.onAlert(true,true,err.response.data.errors[0].detail)
+              this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
            })
 
     }
@@ -66,16 +67,18 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({ type : store.USER_LOGOUT, user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ type : store.SHOW_ALERT, alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 

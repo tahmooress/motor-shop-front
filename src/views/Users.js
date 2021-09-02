@@ -10,7 +10,7 @@ import {
 } from '@coreui/react'
 import * as models from "../models/models"
 import axios from 'axios';
-import * as store from "../store";
+import { userLogout, showAlert}  from "../store";
 import { connect } from 'react-redux';
 import Pagination from 'src/reusable/Pagination';
 import * as util from '../utilities/utilites';
@@ -88,8 +88,11 @@ class Users extends React.Component{
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                        return
                     }
             }
+
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
             this.setState({
                 users : [],
                 totalPage : 0,
@@ -127,16 +130,16 @@ class Users extends React.Component{
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
             }
 
-            this.props.onAlert(true,true,err.message)
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
             
         })
     }
 
     createAdmin = () => {
-        console.log(this.props)
         this.props.history.push(`/create-user`)
     }
 
@@ -239,20 +242,18 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({
-            //  type : store.USER_LOGOUT,
-              user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ 
-            // type : store.SHOW_ALERT,
-             alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(Users)

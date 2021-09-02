@@ -87,6 +87,7 @@ class Transactions extends React.Component{
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
                 
                 this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -103,7 +104,16 @@ class Transactions extends React.Component{
                 return
                 }
 
-                this.props.onAlert(true,true,err)
+                this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+
+                this.setState({
+                    transactions : [],
+                    shopID : "",
+                    totalPage : 0,
+                    currentPage : 1,
+                    filter : "",
+                    filteredURL : "",
+                })
          })
      
     }
@@ -143,6 +153,7 @@ class Transactions extends React.Component{
          if (err.response.data.errors !== null) {
              if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                  this.props.onExit()
+                 return
                  }
              
              this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -159,7 +170,15 @@ class Transactions extends React.Component{
              return
              }
 
-             this.props.onAlert(true,true,err)
+             this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+             this.setState({
+                transactions : [],
+                shopID : "",
+                totalPage : 0,
+                currentPage : 1,
+                filter : "",
+                filteredURL : "",
+            })
         })
     }
 
@@ -168,7 +187,6 @@ class Transactions extends React.Component{
     }
 
     handleFilter = (filter) => {
-        console.log(filter)
         if (this.state.shopID === "") {
             return
         }
@@ -181,9 +199,9 @@ class Transactions extends React.Component{
             let url = `${models.URL}/transactions/${this.state.shopID}?page[size]=10&sort[created_at]=desc`
 
             if (filter !== "all") {
-               url = `${models.URL}/transactions/${this.state.shopID}?page[size]=10sort[created_at]=desc&filter[type]=${filter}`
+               url = `${models.URL}/transactions/${this.state.shopID}?page[size]=10&sort[created_at]=desc&filter[type]=${filter}`
             } else {
-                url = `${models.URL}/transactions/${this.state.shopID}?page[size]=10sort[created_at]=desc`
+                url = `${models.URL}/transactions/${this.state.shopID}?page[size]=10&sort[created_at]=desc`
             }
             
             axios.get(url,config)
@@ -211,6 +229,7 @@ class Transactions extends React.Component{
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
                 
                 this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -227,13 +246,21 @@ class Transactions extends React.Component{
                 return
                 }
 
-                this.props.onAlert(true,true,err)
+                this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+
+                this.setState({
+                    transactions : [],
+                    shopID : "",
+                    totalPage : 0,
+                    currentPage : 1,
+                    filter : "",
+                    filteredURL : "",
+                })
            })
     }
 
   render(){
     const sourceTxs = []
-    console.log(sourceTxs)
     let txs = this.state.transactions.length > 0 ? this.state.transactions.map((tx,index) => {
             sourceTxs.push(tx)
             return{
@@ -242,7 +269,7 @@ class Transactions extends React.Component{
                 "نوع تراکنش": util.txStatus(tx.type),
                 "دلیل تراکنش" : util.txStatus(tx.subject)
             }
-    }) : null;
+    }) : [];
     let pagination = this.state.totalPage ? (
         <div className="row justify-content-center" xs="12" md="8">
         <Pagination  totalPage={this.state.totalPage} handleChangePage={this.handleChangePage} />
@@ -337,10 +364,6 @@ class Transactions extends React.Component{
 }
 
 
-
-
-
-
 const mapStateToProps = (state) => {
     return {
         token : state.user.token,
@@ -351,16 +374,18 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({ type :userLogout, user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ type : showAlert, alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(Transactions)

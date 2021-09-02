@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from 'react-redux';
 import axios from "axios";
-import store from "src/store";
+import { userLogout, showAlert}  from "../store";
 import * as models  from "../models/models"
 import {CContainer, CDataTable} from "@coreui/react";
 import Pagination from "src/reusable/Pagination";
@@ -47,6 +47,7 @@ class Customers extends React.Component {
         if (err.response.data.errors !== null) {
             if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                 this.props.onExit()
+                return
                 }
             
             this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -60,7 +61,13 @@ class Customers extends React.Component {
             return
             }
 
-            this.props.onAlert(true,true,err)
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+            this.setState({
+                customers : [],
+                totalPage : 0,
+                currentPage : 1,
+            })
+
         })
     }
 
@@ -85,6 +92,7 @@ class Customers extends React.Component {
          if (err.response.data.errors !== null) {
              if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                  this.props.onExit()
+                 return
                  }
              
              this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -98,7 +106,12 @@ class Customers extends React.Component {
              return
              }
 
-             this.props.onAlert(true,true,err)
+             this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+             this.setState({
+                customers : [],
+                totalPage : 0,
+                currentPage : 1,
+            })
         })
     }
 
@@ -142,16 +155,18 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({ type : store.USER_LOGOUT, user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ type : store.SHOW_ALERT, alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 

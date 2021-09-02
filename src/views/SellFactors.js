@@ -8,7 +8,7 @@ import * as models from "../models/models"
 import Header from "../reusable/header"
 import Factors from "../reusable/Factors";
 import axios from 'axios';
-import * as store from "../store";
+import { userLogout, showAlert}  from "../store";
 import { connect } from 'react-redux';
 import Alert from   "../reusable/Alert";
 import Pagination from 'src/reusable/Pagination'
@@ -61,6 +61,7 @@ class SellFactors extends React.Component {
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
                 
                 this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -75,7 +76,14 @@ class SellFactors extends React.Component {
                 return
                 }
 
-                this.props.onAlert(true,true,err)
+                this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+                this.setState({
+                    factors : [],
+                    shopID : "",
+                    totalPage : 0,
+                    currentPage : 1,
+                })
+
            })
     }
 
@@ -100,6 +108,7 @@ class SellFactors extends React.Component {
          if (err.response.data.errors !== null) {
              if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                  this.props.onExit()
+                 return
                  }
              
              this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -114,7 +123,13 @@ class SellFactors extends React.Component {
              return
              }
 
-             this.props.onAlert(true,true,err)
+             this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+             this.setState({
+                factors : [],
+                 shopID : "",
+                 totalPage : 0,
+                 currentPage : 1,
+             })
         })
     }
 
@@ -152,20 +167,18 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({
-            //  type : store.USER_LOGOUT, 
-             user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
         onAlert : (show,error,message) => dispatch({
-            //  type : store.SHOW_ALERT,
-              alert :{
-            show,
-            error,
-            message,
-        } })
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(SellFactors)

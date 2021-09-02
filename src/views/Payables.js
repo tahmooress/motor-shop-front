@@ -8,7 +8,7 @@ import * as models from "../models/models"
 import Header from "../reusable/header"
 import EquitiesTable from 'src/reusable/EquitiesTable'
 import axios from 'axios';
-import * as store from "../store";
+import { userLogout, showAlert}  from "../store";
 import { connect } from 'react-redux';
 import Alert from   "../reusable/Alert";
 import Pagination from 'src/reusable/Pagination'
@@ -49,6 +49,7 @@ class Payables extends React.Component{
                     totalPage : 0,
                     filter : "",
                     filteredURL : url,
+                    shopID
                 })
 
                 return
@@ -66,6 +67,7 @@ class Payables extends React.Component{
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
                 
                 this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -82,7 +84,15 @@ class Payables extends React.Component{
                 return
                 }
 
-                this.props.onAlert(true,true,err)
+                this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+                this.setState({
+                    equities : [],
+                    shopID : "",
+                    totalPage : 0,
+                    currentPage : 1,
+                    filter : "",
+                    filteredURL : "",
+                })
            })
     }
 
@@ -96,13 +106,13 @@ class Payables extends React.Component{
                     "Authorization" : `bearer ${this.props.token}`
                 },
             };      
-                // let url = `${models.URL}/debts/${this.state.shopID}`
+
                 let url = `${models.URL}/debts/${this.state.shopID}?page[size]=10&sort[clear_date]=asc`
 
                 if (filter !== "all") {
-                   url = `${models.URL}/debts/${this.state.shopID}?page[size]=10sort[clear_date]=asc&filter[status]=${filter}`
+                   url = `${models.URL}/debts/${this.state.shopID}?page[size]=10&sort[clear_date]=asc&filter[status]=${filter}`
                 } else {
-                    url = `${models.URL}/debts/${this.state.shopID}?page[size]=10sort[clear_date]=asc`
+                    url = `${models.URL}/debts/${this.state.shopID}?page[size]=10&sort[clear_date]=asc`
                 }
                 
                 axios.get(url,config)
@@ -130,6 +140,8 @@ class Payables extends React.Component{
                 if (err.response.data.errors !== null) {
                     if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                         this.props.onExit()
+
+                        return
                         }
                     
                     this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -146,7 +158,15 @@ class Payables extends React.Component{
                     return
                     }
     
-                    this.props.onAlert(true,true,err)
+                    this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+                    this.setState({
+                        equities : [],
+                        shopID : "",
+                        totalPage : 0,
+                        currentPage : 1,
+                        filter : "",
+                        filteredURL : "",
+                    })
                })
     }
 
@@ -158,8 +178,6 @@ class Payables extends React.Component{
         }; 
 
         let url = this.state.filteredURL + `&page[number]=${page}`
-
-        console.log(url)
 
         axios.get(url,config)
         .then(response => response.data)
@@ -173,6 +191,7 @@ class Payables extends React.Component{
          if (err.response.data.errors !== null) {
              if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                  this.props.onExit()
+                 return
                  }
              
              this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -189,7 +208,15 @@ class Payables extends React.Component{
              return
              }
 
-             this.props.onAlert(true,true,err)
+             this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+             this.setState({
+                equities : [],
+                shopID : "",
+                totalPage : 0,
+                currentPage : 1,
+                filter : "",
+                filteredURL : "",
+            })
         })
     }
 
@@ -231,20 +258,18 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({
-            //  type : store.USER_LOGOUT, 
-             user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ 
-            // type : store.SHOW_ALERT, 
-            alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(Payables)

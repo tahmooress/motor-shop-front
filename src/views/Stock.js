@@ -8,7 +8,7 @@ import * as models from "../models/models"
 import Header from "../reusable/header"
 import InventoryTable from "../reusable/InventoryTable";
 import axios from 'axios';
-import {showAlert, userLogin, userLogout} from "../store";
+import {showAlert, userLogout} from "../store";
 import { connect } from 'react-redux';
 import Alert from   "../reusable/Alert";
 import Pagination from 'src/reusable/Pagination'
@@ -61,6 +61,7 @@ class Stock extends React.Component {
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
                 
                 this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -75,7 +76,13 @@ class Stock extends React.Component {
                 return
                 }
 
-                this.props.onAlert(true,true,err)
+                this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+                this.setState({
+                    stocks : [],
+                    shopID : "",
+                    totalPage : 0,
+                    currentPage : 1,
+                })
            })
     }
 
@@ -100,6 +107,7 @@ class Stock extends React.Component {
          if (err.response.data.errors !== null) {
              if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                  this.props.onExit()
+                 return
                  }
              
              this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -114,7 +122,13 @@ class Stock extends React.Component {
              return
              }
 
-             this.props.onAlert(true,true,err)
+             this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+             this.setState({
+                stocks : [],
+                shopID : "",
+                totalPage : 0,
+                currentPage : 1,
+            })
         })
     }
 
@@ -157,11 +171,13 @@ const mapDispatchToProps = (dispatch) =>{
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ type : showAlert, alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(Stock)

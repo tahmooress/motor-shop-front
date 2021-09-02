@@ -10,7 +10,7 @@ import {
   CRow,
 } from '@coreui/react'
 import axios from 'axios';
-import {userLogin, userLogout, showAlert} from "../store";
+import {userLogout, showAlert} from "../store";
 import { connect } from 'react-redux';
 import Header from "../reusable/header";
 import Alert from "../reusable/Alert"
@@ -53,7 +53,14 @@ class CreateTransaction extends React.Component{
             return
         }
 
-        const created_at = util.gDate(util.jalaliDate(this.state.year,this.state.month,this.state.day))
+        let created_at = ""
+
+        try {
+            created_at = util.gDate(util.jalaliDate(this.state.year,this.state.month,this.state.day))
+        } catch (error) {
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+        }
+
         const body = {
             created_at,
             amount : Number(this.state.amount),
@@ -78,6 +85,7 @@ class CreateTransaction extends React.Component{
               if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
 
                 this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -87,13 +95,12 @@ class CreateTransaction extends React.Component{
                 try{
                     this.props.onAlert(true,true,err.response.data.errors[0].detail)
                 }catch{
-                    this.props.onAlert(true,true,err.message)
+                    this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
                 }
                })
     }
 
     render(){
-        console.log(this.state)
         return (
             <>  
                 <Alert show={this.props.alert.show} message={this.props.alert.message} error={this.props.alert.error}/>
@@ -234,16 +241,18 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) =>{
     return {
-        onExit : () => dispatch({ type :userLogout, user : {
+        onExit : () => dispatch({ type : userLogout, user : {
             token : null,
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ type : showAlert, alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(CreateTransaction)

@@ -78,13 +78,14 @@ class Buy extends React.Component{
                   if (err.response.data.errors !== null) {
                     if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                         this.props.onExit()
+                        return
                         }
 
                     this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
                    
                     return
                   }
-                  this.props.onAlert(true,true,err)
+                  this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
                })
     }
 
@@ -115,6 +116,7 @@ class Buy extends React.Component{
             if (err.response.data.errors !== null) {
                 if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                     this.props.onExit()
+                    return
                     }
                 
                 this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
@@ -122,12 +124,11 @@ class Buy extends React.Component{
                 return
                 }
 
-                this.props.onAlert(true,true,err)
+                this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
            })
     }
 
     handleChange = (e) => {
-        console.log(e)
         this.setState({
             [e.target.name] : e.target.value
         })
@@ -141,13 +142,15 @@ class Buy extends React.Component{
 
     handleCloseCustomer = () => {
         this.setState({
-            showCustomerResult : false
+            showCustomerResult : false,
+            cutm : new models.Customer(),
         })
     }
 
     handleCloseMotor = () => {
         this.setState({
             showMotorResult : false,
+            motor : new models.Motor(),
         })
     }
 
@@ -159,7 +162,6 @@ class Buy extends React.Component{
     }
 
     handleAddMotor = (motor) => {
-        console.log(motor)
         this.setState(state => {
             return {
                 motors : [...state.motors, motor],
@@ -176,7 +178,6 @@ class Buy extends React.Component{
     }
 
     handleShowMotorResult = () => {
-        console.log("yes")
         this.setState({
             showMotorResult : true
         })
@@ -196,7 +197,13 @@ class Buy extends React.Component{
             return 
         }
 
-        let firstPay = util.gDate(util.jalaliDate(this.state.fyear,this.state.fmonth,this.state.fday))
+        let firstPay = ""
+
+       try {
+        firstPay = util.gDate(util.jalaliDate(this.state.fyear,this.state.fmonth,this.state.fday))
+       } catch (error) {
+        this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+       }
 
         let monthlyPay = (Number(this.state.total_amount) - Number(this.state.payed_amount)) / Number(this.state.equitiesNumber)
 
@@ -205,9 +212,22 @@ class Buy extends React.Component{
         }
 
 
-        let equities = util.calculateEquities( monthlyPay, Number(this.state.equitiesNumber), firstPay)
+        let equities = []
 
-        let created_at = util.gDate(util.jalaliDate(this.state.fyear,this.state.fmonth,this.state.fday), true);
+        try {
+            equities =  util.calculateEquities( monthlyPay, Number(this.state.equitiesNumber), firstPay)
+        } catch (error) {
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+        }
+
+        let created_at = ""
+
+        try {
+            created_at = util.gDate(util.jalaliDate(this.state.fyear,this.state.fmonth,this.state.fday), true);
+        } catch (error) {
+            this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+        }
+
         
         let factor = new models.Factor(this.state.factor_number, this.state.payed_amount, this.state.total_amount, created_at, this.state.motors, this.state.customer, null,equities)
        
@@ -233,19 +253,95 @@ class Buy extends React.Component{
                 axios.post(`${models.URL}/buy`, JSON.stringify(data), config)
                .then(response => response.data)
                .then(data => {
-                    console.log(data)
+                    this.props.onAlert(true, false, "با موفقیت ثبت شد")
+                    this.setState({
+                        year : "",
+                        month : "",
+                        day : "",
+                        fyear : "",
+                        fmonth : "",
+                        fday : "",
+                        total_amount : 0,
+                        payed_amount : 0,
+                        factor_number : "",
+                        created_at : "",
+                        shopID : "",
+                        showMotorResult : false,
+                        showCustomerResult : false,
+                        motors : [],
+                        equities : [],
+                        customer : new models.Customer(),
+                        cutm : new models.Customer(),
+                        motor : new models.Motor(),
+                        firstPay : "",
+                        equitiesNumber : 0,
+                        finalFactor : new models.Factor(),
+                        showResultFactor : false
+                    })
                })
                .catch(err => {
                   if (err.response.data.errors !== null) {
                     if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
                         this.props.onExit()
+
+                        return
                         }
 
                     this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
                    
+                    this.setState({
+                        year : "",
+                        month : "",
+                        day : "",
+                        fyear : "",
+                        fmonth : "",
+                        fday : "",
+                        total_amount : 0,
+                        payed_amount : 0,
+                        factor_number : "",
+                        created_at : "",
+                        shopID : "",
+                        showMotorResult : false,
+                        showCustomerResult : false,
+                        motors : [],
+                        equities : [],
+                        customer : new models.Customer(),
+                        cutm : new models.Customer(),
+                        motor : new models.Motor(),
+                        firstPay : "",
+                        equitiesNumber : 0,
+                        finalFactor : new models.Factor(),
+                        showResultFactor : false
+                    })
+
                     return
                   }
-                  this.props.onAlert(true,true,err.response.data.errors[0].detail)
+
+                  this.setState({
+                    year : "",
+                    month : "",
+                    day : "",
+                    fyear : "",
+                    fmonth : "",
+                    fday : "",
+                    total_amount : 0,
+                    payed_amount : 0,
+                    factor_number : "",
+                    created_at : "",
+                    shopID : "",
+                    showMotorResult : false,
+                    showCustomerResult : false,
+                    motors : [],
+                    equities : [],
+                    customer : new models.Customer(),
+                    cutm : new models.Customer(),
+                    motor : new models.Motor(),
+                    firstPay : "",
+                    equitiesNumber : 0,
+                    finalFactor : new models.Factor(),
+                    showResultFactor : false
+                })
+                  this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
                })
     }
 

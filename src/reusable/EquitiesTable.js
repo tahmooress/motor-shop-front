@@ -57,7 +57,6 @@ import * as util from "../utilities/utilites";
         }
 
       render(){
-          console.log(this.props.equities)
        let sourceEquities = []
         let data = this.props.equities.map((equity, index) => {
             sourceEquities.push(equity)

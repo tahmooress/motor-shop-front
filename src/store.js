@@ -23,10 +23,8 @@ export const userLogout = "userLogOut";
 export const showAlert = "showAlert";
 
 const changeState = (state = initialState, { type, payload }) => {
-  console.log(state, "store")
   switch (type) {
     case 'set':
-      console.log(type, payload)
       return {...state, sidebarShow : payload.sidebarShow}
     case userLogin:
       // localStorage.setItem('token', rest.user.token)
@@ -36,7 +34,6 @@ const changeState = (state = initialState, { type, payload }) => {
         accessibility : payload.accessibility
       } }
     case userLogout:
-      console.log("here")
       // localStorage.setItem('token', '')
         return initialState
     case showAlert:

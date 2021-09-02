@@ -9,7 +9,6 @@ class Alert extends React.Component {
     this.props.onAlert(false,false,"")
   }
     render(){ 
-      console.log(this.props)
       return(
         <div className="mt-2">
         <CAlert  show={this.props.show} color={this.props.error ? "danger" : "success"} >

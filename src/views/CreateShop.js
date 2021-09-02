@@ -47,7 +47,21 @@ class CreateShop extends React.Component{
             .then(response => {
                 this.props.onAlert(true,false,"با موفقیت ثبت شد")
             }).catch(err =>{
-                this.props.onAlert(true,true,err.message)
+                if (err.response.data.errors !== null) {
+                    if (err.response.data.errors[0].detail === models.TOKEN_EXPIRE || err.response.data.errors[0].detail === models.BAD_TOKEN) {
+                        this.props.onExit()
+                        return
+                        }
+    
+                    this.props.onAlert(true, true,err.response.data.errors[0]["detail-locale"])
+                   
+                    return
+                  }
+                    try{
+                        this.props.onAlert(true,true,err.response.data.errors[0].detail)
+                    }catch{
+                        this.props.onAlert(true,true,"خطایی در سیستم رخ داده")
+                    }
             })
     }
 
@@ -96,11 +110,13 @@ const mapDispatchToProps = (dispatch) =>{
             accessibility : [],
             userName : ""
         }}),
-        onAlert : (show,error,message) => dispatch({ type : showAlert, alert :{
-            show,
-            error,
-            message,
-        } })
+        onAlert : (show,error,message) => dispatch({
+            type : showAlert, payload : {
+                show : show,
+                error : error,
+                message : message
+            }
+        })
     } 
 }
 export default connect(mapStateToProps, mapDispatchToProps)(CreateShop)
