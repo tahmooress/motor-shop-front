@@ -218,7 +218,7 @@ export class Factor{
 
 // constans //
 
-export const URL = "http://127.0.0.1:8000"
+export const URL = "http://185.231.112.64/api";
 export const TOKEN_EXPIRE = "Token is expired"
 export const BAD_TOKEN = "token contains an invalid number of segments"
 

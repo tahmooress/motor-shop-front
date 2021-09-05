@@ -19,6 +19,7 @@ import axios from 'axios';
 import {showAlert, userLogin} from "../../../store";
 import Alert from 'src/reusable/Alert';
 import { connect } from 'react-redux';
+import * as models from "../../../models/models"
 
 
 class Login extends React.Component {
@@ -38,7 +39,7 @@ class Login extends React.Component {
   }
 
   handleSubmit = (e)=>{
-    const URL = "http://127.0.0.1:8000/login";
+    const URL = `${models.URL}/login`;
     let data = {
       user_name : this.state.user_name,
       password : this.state.password
